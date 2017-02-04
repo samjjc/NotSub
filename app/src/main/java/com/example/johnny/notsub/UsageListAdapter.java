@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 
 public class UsageListAdapter extends ArrayAdapter<customUsageStats> {
-    SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+    SimpleDateFormat df = new SimpleDateFormat("EEE, MMMM d, yyyy");
 
     public UsageListAdapter(Context context, ArrayList<customUsageStats> usageAdapter) {
         super(context, 0, usageAdapter);
