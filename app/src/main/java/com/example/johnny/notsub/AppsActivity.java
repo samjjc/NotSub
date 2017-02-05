@@ -5,12 +5,14 @@ import android.app.usage.UsageStatsManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,27 +56,40 @@ public class AppsActivity extends AppCompatActivity {
             final ArrayList<customUsageStats> queryUsageStats = new ArrayList<customUsageStats>();
             for (int i = 0; i < temp.size(); i++) {
                 UsageStats currentUsage = temp.get(i);
-                Drawable appIcon;
-                try {
-                    appIcon = this.getPackageManager()
-                            .getApplicationIcon(currentUsage.getPackageName());
-                } catch (PackageManager.NameNotFoundException e) {
-                    Log.w("Main Activity", String.format("App Icon is not found for %s",
-                            currentUsage.getPackageName()));
-                    appIcon = this
-                            .getDrawable(R.mipmap.ic_launcher);
+                if(checkWhitelist(currentUsage.getPackageName())) {
+                    Drawable appIcon;
+                    try {
+                        appIcon = this.getPackageManager()
+                                .getApplicationIcon(currentUsage.getPackageName());
+                    } catch (PackageManager.NameNotFoundException e) {
+                        Log.w("Main Activity", String.format("App Icon is not found for %s",
+                                currentUsage.getPackageName()));
+                        appIcon = this
+                                .getDrawable(R.mipmap.ic_launcher);
+                    }
+                    queryUsageStats.add(new customUsageStats(currentUsage, appIcon));
                 }
-                queryUsageStats.add(new customUsageStats(currentUsage, appIcon));
             }
             UsageListAdapter itemsAdapter = new UsageListAdapter(this, queryUsageStats);
 
             ListView listView = (ListView) findViewById(R.id.list);
 
             listView.setAdapter(itemsAdapter);
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Log.v("MAIN", "CLICKED");
+                    customUsageStats item = queryUsageStats.get(i);
+                    insertPackage(item.getUsageStats().getPackageName());
+                }
+            });
         }
     }
 
     private void insertPackage (String pack){
+        Log.v("MAIN", "Started interting");
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(UsageContract.AppEntry.COLUMN_PACKAGE_NAME, pack);
@@ -87,6 +102,15 @@ public class AppsActivity extends AppCompatActivity {
         else{
             Toast.makeText(this, "Pet saved with row id: "+newRowId, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private boolean checkWhitelist (String pack){
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor c = db.query(UsageContract.AppEntry.TABLE_NAME, null, UsageContract.AppEntry.TABLE_NAME+"="+pack,null,null,null,null);
+        if (!c.equals(null))
+            return c.getCount() == 0;
+        return false;
+        //Cursor c = db.execSQL("SELECT * FROM "+ UsageContract.AppEntry.TABLE_NAME + " WHERE " +UsageContract.AppEntry.COLUMN_PACKAGE_NAME+"="+pack+";");
     }
 
 }
