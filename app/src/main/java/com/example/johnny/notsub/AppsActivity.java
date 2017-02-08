@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +25,7 @@ import java.util.List;
 public class AppsActivity extends AppCompatActivity {
 
     UsageDbHelper mDbHelper;
+    Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +76,7 @@ public class AppsActivity extends AppCompatActivity {
 
             listView.setAdapter(itemsAdapter);
 
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -85,6 +85,23 @@ public class AppsActivity extends AppCompatActivity {
                     insertPackage(item.getUsageStats().getPackageName());
                 }
             });
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    customUsageStats item = queryUsageStats.get(i);
+                    Drawable icon=item.getAppIcon();
+                    Intent intent = new Intent(context, GraphActivity.class);
+                    Bitmap bitmap = BitmapFactory.decodeResource(icon);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    icon.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                    byte[] b = baos.toByteArray();
+
+                    intent.putExtra("picture", icon);
+                    startActivity(intent);
+                    startActivity(intent);
+                }
+            });*/
         }
     }
 
